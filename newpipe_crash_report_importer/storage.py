@@ -289,7 +289,7 @@ class SentryStorage(Storage):
             except KeyError:
                 pass
 
-        for key in ["os", "service", "content_language"]:
+        for key in ["os", "service", "content_language", "package"]:
             try:
                 rv["tags"][key] = newpipe_exc_info[key]
             except KeyError:
