@@ -48,6 +48,8 @@ This is one of the reasons you don't find a "how to run" at the moment,
 although this might change in the future. Just open an issue, and we'll
 try to provide one.
 
+**Note:** This application requires Python 3.5 or higher.
+
 
 ## License
 
