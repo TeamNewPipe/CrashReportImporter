@@ -278,6 +278,11 @@ class SentryStorage(Storage):
             "level": "error",
         }
 
+        try:
+            rv["release"] = newpipe_exc_info["version"]
+        except KeyError:
+            pass
+
         for key in ["user_comment", "request", "ip_range", "user_action"]:
             try:
                 rv["extra"][key] = newpipe_exc_info[key]
