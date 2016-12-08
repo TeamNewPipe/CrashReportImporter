@@ -1,0 +1,3 @@
+bleach>=1.4
+raven>=5.19
+requests>=2.10

@@ -1,0 +1,7 @@
+mail-credentials.txt
+sentry-dsn.txt
+*.stored.txt
+__pycache__/
+*.py[c|o]
+mails/
+.idea/
