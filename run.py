@@ -35,7 +35,7 @@ if __name__ == "__main__":
 
         try:
             entry = DatabaseEntry(m)
-        except ParserError as e:
+        except Exception as e:
             errors_count += 1
             print()
             print("Error while parsing the message: %s" % repr(e))
@@ -48,19 +48,19 @@ if __name__ == "__main__":
             if entry.date.timestamp() > datetime.now().timestamp():
                 errors_count += 1
                 print()
-                print("WOOT THIS EXCEPTION HAS OCCURRED IN THE FUTURE WOOT")
+                print("Exception occured in the future... How could that happen?")
                 continue
 
             try:
                 directory_storage.save(entry)
-            except (ParserError, StorageError) as e:
+            except Exception as e:
                 errors_count += 1
                 print()
                 print("Error while writing the message: %s" % repr(e))
 
             try:
                 sentry_storage.save(entry)
-            except (ParserError, StorageError) as e:
+            except Exception as e:
                 errors_count += 1
                 print()
                 print("Error while writing the message: %s" % repr(e))
