@@ -289,11 +289,22 @@ class SentryStorage(Storage):
             except KeyError:
                 pass
 
-        for key in ["os", "service", "content_language", "package"]:
+        for key in ["os", "service", "content_language"]:
             try:
                 rv["tags"][key] = newpipe_exc_info[key]
             except KeyError:
                 pass
+
+        try:
+            package = newpipe_exc_info["package"]
+        except KeyError:
+            package = None
+
+        if package is not None:
+            if package != "org.schabi.newpipe":
+                raise ValueError("Package name not allowed: %s" % package)
+            else:
+                rv["tags"]["package"] = newpipe_exc_info["package"]
 
         return rv
 
