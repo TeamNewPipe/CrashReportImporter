@@ -11,7 +11,7 @@ See README.md for more information.
 from datetime import datetime, timedelta
 from newpipe_crash_report_importer.mail_client import fetch_messages_from_imap
 from newpipe_crash_report_importer.storage import DatabaseEntry, \
-    DirectoryStorage, ParserError, SentryStorage, StorageError
+    DirectoryStorage, SentryStorage
 
 if __name__ == "__main__":
     # read e-mail credentials
