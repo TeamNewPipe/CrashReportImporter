@@ -178,7 +178,9 @@ class DirectoryStorage(Storage):
 
     def save(self, entry: DatabaseEntry):
         message_id = entry.hash_id() + ".json"
-        path = os.path.join(self.directory, message_id)
+        subdir = os.path.join(self.directory, message_id[0], message_id[:3], message_id[:5])
+        os.makedirs(subdir, exist_ok=True)
+        path = os.path.join(subdir, message_id)
         if not os.path.isfile(path):
             with open(path, "w") as f:
                 json.dump(entry.to_dict(), f, indent=2)
@@ -195,15 +197,15 @@ class SentryStorage(Storage):
     in the application's root directory.
     """
 
-    def __init__(self, dsn: str):
+    def __init__(self, dsn: str, package: str):
         self.dsn = raven.conf.remote.RemoteConfig.from_string(dsn)
         valid_chars = string.ascii_letters + string.digits
         self.db_fname = "".join(filter(lambda s: s in valid_chars,
                                        self.dsn.store_endpoint)) + \
                         ".stored.txt"
+        self.package = package
 
-    @staticmethod
-    def make_sentry_exception(entry: DatabaseEntry):
+    def make_sentry_exception(self, entry: DatabaseEntry):
         newpipe_exc_info = entry.newpipe_exception_info
 
         frames = []
@@ -225,6 +227,9 @@ class SentryStorage(Storage):
                 if ":" in frame_match.group(2):
                     expr = "([a-zA-Z]+\.java+):([0-9]+)"
                     filename_and_lineno = re.search(expr, frame_match.group(2))
+
+                    if not filename_and_lineno:
+                        raise ValueError("could not find filename and line number")
 
                     frame_dict = {
                         "package": ".".join(module_path[:-1]),
@@ -301,7 +306,7 @@ class SentryStorage(Storage):
             package = None
 
         if package is not None:
-            if package != "org.schabi.newpipe":
+            if package != self.package:
                 raise ValueError("Package name not allowed: %s" % package)
             else:
                 rv["tags"]["package"] = newpipe_exc_info["package"]
