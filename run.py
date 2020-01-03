@@ -27,8 +27,11 @@ if __name__ == "__main__":
 
     with open("sentry-dsn.txt") as f:
         sentry_dsn = f.read().strip(" \n\r")
+    with open("legacy-dsn.txt") as f:
+        legacy_dsn = f.read().strip(" \n\r")
 
-    sentry_storage = SentryStorage(sentry_dsn)
+    sentry_storage = SentryStorage(sentry_dsn, "org.schabi.newpipe")
+    sentry_legacy = SentryStorage(legacy_dsn, "org.schabi.newpipelegacy")
 
     errors_count = 0
     mails_count = 0
@@ -63,11 +66,18 @@ if __name__ == "__main__":
                 traceback.print_exc()
 
             try:
-                sentry_storage.save(entry)
+                package = entry.newpipe_exception_info["package"]
+                if package == "org.schabi.newpipe":
+                    sentry_storage.save(entry)
+                elif package == "org.schabi.newpipelegacy":
+                    legacy_storage.save(entry)
+                else:
+                    raise Exception("Unknown package: " + package)
             except Exception as e:
                 errors_count += 1
                 print()
                 print("Error while writing the message: %s" % repr(e))
+                traceback.print_exc()
 
         mails_count = i
 
