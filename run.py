@@ -31,7 +31,7 @@ if __name__ == "__main__":
         legacy_dsn = f.read().strip(" \n\r")
 
     sentry_storage = SentryStorage(sentry_dsn, "org.schabi.newpipe")
-    sentry_legacy = SentryStorage(legacy_dsn, "org.schabi.newpipelegacy")
+    legacy_storage = SentryStorage(legacy_dsn, "org.schabi.newpipelegacy")
 
     errors_count = 0
     mails_count = 0
