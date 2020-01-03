@@ -13,6 +13,9 @@ from newpipe_crash_report_importer.mail_client import fetch_messages_from_imap
 from newpipe_crash_report_importer.storage import DatabaseEntry, \
     DirectoryStorage, SentryStorage
 
+import traceback
+
+
 if __name__ == "__main__":
     # read e-mail credentials
     with open("mail-credentials.txt") as f:
@@ -57,6 +60,7 @@ if __name__ == "__main__":
                 errors_count += 1
                 print()
                 print("Error while writing the message: %s" % repr(e))
+                traceback.print_exc()
 
             try:
                 sentry_storage.save(entry)
