@@ -1,7 +1,10 @@
 mail-credentials.txt
-sentry-dsn.txt
+*-dsn.txt
 *.stored.txt
 __pycache__/
 *.py[c|o]
 mails/
 .idea/
+*.tar*
+*.sh
+*venv*/
