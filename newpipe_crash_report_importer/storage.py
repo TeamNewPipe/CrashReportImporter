@@ -271,7 +271,6 @@ class SentryStorage(Storage):
             "extra": {
                 "user_comment": None,
                 "request": None,
-                "ip_range": None,
                 "user_action": None,
             },
             "timestamp": timestamp,
@@ -288,7 +287,7 @@ class SentryStorage(Storage):
         except KeyError:
             pass
 
-        for key in ["user_comment", "request", "ip_range", "user_action"]:
+        for key in ["user_comment", "request", "user_action"]:
             try:
                 rv["extra"][key] = newpipe_exc_info[key]
             except KeyError:
