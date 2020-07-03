@@ -278,6 +278,8 @@ class SentryStorage(Storage):
                 "os": None,
                 "service": None,
                 "content_language": None,
+                "content_country": None,
+                "app_language": None,
             },
             "level": "error",
         }
@@ -293,7 +295,7 @@ class SentryStorage(Storage):
             except KeyError:
                 pass
 
-        for key in ["os", "service", "content_language"]:
+        for key in ["os", "service", "content_language", "content_country", "app_language"]:
             try:
                 rv["tags"][key] = newpipe_exc_info[key]
             except KeyError:
