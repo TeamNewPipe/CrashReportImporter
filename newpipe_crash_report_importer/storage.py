@@ -37,7 +37,7 @@ class Message:
 
     def __init__(self, rfc822_message):
         self.rfc822_message = rfc822_message
-        self. plaintext_or_html_part = self.get_plaintext_or_html_part()
+        self.plaintext_or_html_part = self.get_plaintext_or_html_part()
         payload = self.plaintext_or_html_part.get_payload(decode=True)
 
         for charset in self.possible_charsets:
@@ -71,8 +71,7 @@ class Message:
     def sanitize_message(original_data):
         normalized = unicodedata.normalize("NFKD", original_data)
         decoded = html.unescape(normalized)
-        sanitized = bleach.clean(decoded,
-                                 tags=[], attributes={}, styles=[], strip=True)
+        sanitized = bleach.clean(decoded, tags=[], attributes={}, styles=[], strip=True)
         return unicodedata.normalize("NFKD", sanitized)
 
     @staticmethod
@@ -96,7 +95,6 @@ class Message:
                 raise ParserError("Could not parse JSON in given data")
         else:
             raise ParserError("Could not find JSON in given data")
-
 
     def date_from_received_headers(self):
         headers = self.rfc822_message.get_all("received")
@@ -128,8 +126,9 @@ class DatabaseEntry:
 
         try:
             # try to use the date given by the crash report
-            self.date = datetime.strptime(self.newpipe_exception_info["time"],
-                                          "%Y-%m-%d %H:%M")
+            self.date = datetime.strptime(
+                self.newpipe_exception_info["time"], "%Y-%m-%d %H:%M"
+            )
             if self.date.year < 2010:
                 raise ValueError()
         except ValueError:
@@ -178,7 +177,9 @@ class DirectoryStorage(Storage):
 
     def save(self, entry: DatabaseEntry):
         message_id = entry.hash_id() + ".json"
-        subdir = os.path.join(self.directory, message_id[0], message_id[:3], message_id[:5])
+        subdir = os.path.join(
+            self.directory, message_id[0], message_id[:3], message_id[:5]
+        )
         os.makedirs(subdir, exist_ok=True)
         path = os.path.join(subdir, message_id)
         if not os.path.isfile(path):
@@ -200,9 +201,10 @@ class SentryStorage(Storage):
     def __init__(self, dsn: str, package: str):
         self.dsn = raven.conf.remote.RemoteConfig.from_string(dsn)
         valid_chars = string.ascii_letters + string.digits
-        self.db_fname = "".join(filter(lambda s: s in valid_chars,
-                                       self.dsn.store_endpoint)) + \
-                        ".stored.txt"
+        self.db_fname = (
+            "".join(filter(lambda s: s in valid_chars, self.dsn.store_endpoint))
+            + ".stored.txt"
+        )
         self.package = package
 
     def make_sentry_exception(self, entry: DatabaseEntry):
@@ -295,7 +297,13 @@ class SentryStorage(Storage):
             except KeyError:
                 pass
 
-        for key in ["os", "service", "content_language", "content_country", "app_language"]:
+        for key in [
+            "os",
+            "service",
+            "content_language",
+            "content_country",
+            "app_language",
+        ]:
             try:
                 rv["tags"][key] = newpipe_exc_info[key]
             except KeyError:
@@ -330,21 +338,29 @@ class SentryStorage(Storage):
 
         data = self.make_sentry_exception(entry)
 
-        auth_header = """
+        auth_header = (
+            """
         Sentry sentry_version=5,
           sentry_client=newpipe-mail-reporter_0.0.1,
           sentry_key={pubkey},
           sentry_secret={privkey}
-        """.replace("\n", "").format(
-            timestamp=str(entry.date.timestamp()),
-            pubkey=self.dsn.public_key,
-            privkey=self.dsn.secret_key
-        ).strip()
+        """.replace(
+                "\n", ""
+            )
+            .format(
+                timestamp=str(entry.date.timestamp()),
+                pubkey=self.dsn.public_key,
+                privkey=self.dsn.secret_key,
+            )
+            .strip()
+        )
 
-        request = requests.Request("POST",
-                                   self.dsn.store_endpoint,
-                                   headers={"X-Sentry-Auth": auth_header},
-                                   data=json.dumps(data))
+        request = requests.Request(
+            "POST",
+            self.dsn.store_endpoint,
+            headers={"X-Sentry-Auth": auth_header},
+            data=json.dumps(data),
+        )
         response = requests.Session().send(request.prepare())
         response.raise_for_status()
 

@@ -8,80 +8,74 @@ and in a local directory.
 See README.md for more information.
 """
 
+import asyncio
+import os
 from datetime import datetime, timedelta
-from newpipe_crash_report_importer.mail_client import fetch_messages_from_imap
-from newpipe_crash_report_importer.storage import DatabaseEntry, \
-    DirectoryStorage, SentryStorage
 
-import traceback
+import sentry_sdk
+
+from newpipe_crash_report_importer import (
+    DatabaseEntry,
+    DirectoryStorage,
+    GlitchtipStorage,
+    LmtpController,
+    CrashReportHandler,
+    Message,
+)
 
 
 if __name__ == "__main__":
-    # read e-mail credentials
-    with open("mail-credentials.txt") as f:
-        lines = [l.strip(" \n") for l in f.readlines()]
+    # report errors in the importer to GlitchTip, too
+    sentry_sdk.init(dsn=os.environ["OWN_DSN"])
 
-    client = fetch_messages_from_imap(*lines[:4])
-
+    # initialize storages
     directory_storage = DirectoryStorage("mails")
 
-    with open("sentry-dsn.txt") as f:
-        sentry_dsn = f.read().strip(" \n\r")
-    with open("legacy-dsn.txt") as f:
-        legacy_dsn = f.read().strip(" \n\r")
+    newpipe_dsn = os.environ["NEWPIPE_DSN"]
+    newpipe_legacy_dsn = os.environ["NEWPIPE_LEGACY_DSN"]
 
-    sentry_storage = SentryStorage(sentry_dsn, "org.schabi.newpipe")
-    legacy_storage = SentryStorage(legacy_dsn, "org.schabi.newpipelegacy")
+    sentry_storage = GlitchtipStorage(newpipe_dsn, "org.schabi.newpipe")
+    legacy_storage = GlitchtipStorage(newpipe_legacy_dsn, "org.schabi.newpipelegacy")
 
-    errors_count = 0
-    mails_count = 0
-
-    for i, m in enumerate(client):
-        print("\rWriting mail {}".format(i), end="")
+    # define handler code as closure
+    # TODO: this is not very elegant, should be refactored
+    async def handle_received_mail(message: Message):
+        print(f"Handling mail")
 
         try:
-            entry = DatabaseEntry(m)
+            entry = DatabaseEntry(message)
         except Exception as e:
-            errors_count += 1
-            print()
             print("Error while parsing the message: %s" % repr(e))
+            return
+
+        if (
+            entry.date.timestamp()
+            < (datetime.now() - timedelta(days=29, hours=23)).timestamp()
+        ):
+            print("Exception older than 29 days and 23 hours, discarding...")
+            return
+
+        if entry.date.timestamp() > datetime.now().timestamp():
+            print("Exception occured in the future... How could that happen?")
+            return
+
+        await directory_storage.save(entry)
+
+        package = entry.newpipe_exception_info["package"]
+
+        if package == "org.schabi.newpipe":
+            await sentry_storage.save(entry)
+        elif package == "org.schabi.newpipelegacy":
+            await legacy_storage.save(entry)
         else:
+            raise RuntimeError("Unknown package: " + package)
 
-            if entry.date.timestamp() < (datetime.now() - timedelta(days=29, hours=23)).timestamp():
-                print()
-                print("Exception older than 29 days and 23 hours, discarding...")
-                continue
-            if entry.date.timestamp() > datetime.now().timestamp():
-                errors_count += 1
-                print()
-                print("Exception occured in the future... How could that happen?")
-                continue
+    # set up LMTP server
+    controller = LmtpController(
+        CrashReportHandler(handle_received_mail), enable_SMTPUTF8=True
+    )
+    controller.start()
+    print(controller.hostname, controller.port)
 
-            try:
-                directory_storage.save(entry)
-            except Exception as e:
-                errors_count += 1
-                print()
-                print("Error while writing the message: %s" % repr(e))
-                traceback.print_exc()
-
-            try:
-                package = entry.newpipe_exception_info["package"]
-                if package == "org.schabi.newpipe":
-                    sentry_storage.save(entry)
-                elif package == "org.schabi.newpipelegacy":
-                    legacy_storage.save(entry)
-                else:
-                    raise Exception("Unknown package: " + package)
-            except Exception as e:
-                errors_count += 1
-                print()
-                print("Error while writing the message: %s" % repr(e))
-                traceback.print_exc()
-
-        mails_count = i
-
-    print()
-    print("Total message count: %s" % str(mails_count))
-    if errors_count > 0:
-        print("Total error count: %s" % str(errors_count))
+    # run server forever
+    asyncio.get_event_loop().run_forever()
