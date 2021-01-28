@@ -1,20 +1,11 @@
-"""
-NewPipe Crash Report Importer
-=============================
-
-Parses crash reports received via e-mail and stores them on a sentry instance
-and in a local directory.
-
-See README.md for more information.
-"""
-
 import asyncio
 import os
 from datetime import datetime, timedelta
 
+import click
 import sentry_sdk
 
-from newpipe_crash_report_importer import (
+from . import (
     DatabaseEntry,
     DirectoryStorage,
     GlitchtipStorage,
@@ -24,7 +15,18 @@ from newpipe_crash_report_importer import (
 )
 
 
-if __name__ == "__main__":
+@click.group()
+def cli():
+    """
+    Placeholder. Allows integration the subcommands.
+    """
+    pass
+
+
+@cli.command()
+@click.option("--host", type=str, default="::1")
+@click.option("--port", type=int, default=8025)
+def serve(host, port):
     # report errors in the importer to GlitchTip, too
     sentry_sdk.init(dsn=os.environ["OWN_DSN"])
 
@@ -72,10 +74,17 @@ if __name__ == "__main__":
 
     # set up LMTP server
     controller = LmtpController(
-        CrashReportHandler(handle_received_mail), enable_SMTPUTF8=True
+        CrashReportHandler(handle_received_mail),
+        enable_SMTPUTF8=True,
+        hostname=host,
+        port=port,
     )
     controller.start()
     print(controller.hostname, controller.port)
 
     # run server forever
     asyncio.get_event_loop().run_forever()
+
+
+if __name__ == "__main__":
+    cli()
