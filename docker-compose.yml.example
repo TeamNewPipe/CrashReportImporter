@@ -1,0 +1,19 @@
+version: '2'
+
+volumes:
+  mails:
+
+services:
+  server:
+    build: .
+    ports:
+      - 127.0.0.1:8025:8025
+    environment:
+      # GlitchTip DSN errors in the importer's LMTP server will be reported to
+      - OWN_DSN=...
+      # GlitchTip DSNs the error reports will be imported into
+      - NEWPIPE_DSN=...
+      - NEWPIPE_LEGACY_DSN=...
+    volumes:
+      # used for the directory storage
+      - mails:/app/mails
