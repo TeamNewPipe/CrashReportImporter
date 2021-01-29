@@ -9,6 +9,7 @@ from . import (
     DatabaseEntry,
     DirectoryStorage,
     GlitchtipStorage,
+    GlitchtipError,
     LmtpController,
     CrashReportHandler,
     Message,
@@ -71,12 +72,16 @@ def serve(host, port):
 
         package = entry.newpipe_exception_info["package"]
 
-        if package == "org.schabi.newpipe":
-            await sentry_storage.save(entry)
-        elif package == "org.schabi.newpipelegacy":
-            await legacy_storage.save(entry)
-        else:
-            raise RuntimeError("Unknown package: " + package)
+        try:
+            if package == "org.schabi.newpipe":
+                await sentry_storage.save(entry)
+            elif package == "org.schabi.newpipelegacy":
+                await legacy_storage.save(entry)
+            else:
+                raise RuntimeError("Unknown package: " + package)
+
+        except GlitchtipError as e:
+            logger.error("Failed to store error in GlitchTip: %s", e)
 
     # set up LMTP server
     controller = LmtpController(

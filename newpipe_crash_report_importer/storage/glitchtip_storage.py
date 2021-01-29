@@ -194,7 +194,7 @@ class SentryPayload:
         return rv
 
 
-class GlitchtipSaveError(Exception):
+class GlitchtipError(Exception):
     def __init__(self, status: int, text: str):
         self.status = status
         self.text = text
@@ -368,4 +368,4 @@ class GlitchtipStorage(Storage):
         async with aiohttp.ClientSession() as session:
             async with session.post(url, data=data, headers=headers) as response:
                 if response.status != 200:
-                    raise GlitchtipSaveError(response.status, await response.text())
+                    raise GlitchtipError(response.status, await response.text())
