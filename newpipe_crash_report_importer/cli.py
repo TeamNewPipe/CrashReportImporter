@@ -1,6 +1,7 @@
 import asyncio
 import os
 from datetime import datetime, timedelta
+from smtplib import LMTP
 
 import click
 import sentry_sdk
@@ -88,6 +89,31 @@ def serve(host, port):
 
     # run server forever
     asyncio.get_event_loop().run_forever()
+
+
+# note that import is a protected keyword, so we have to specify the command name explicitly
+@cli.command("import")
+@click.argument("filenames", type=click.Path(exists=True), nargs=-1)
+@click.option("--host", type=str, default="::1")
+@click.option("--port", type=int, default=8025)
+def import_rfc822(filenames, host, port):
+    logger.info(f"Connecting to LMTP server {host}:{port}")
+    client = LMTP(host=host, port=port)
+
+    for filename in filenames:
+        with open(filename) as f:
+            data = f.read()
+
+        try:
+            logger.info(f"Importing RFC822 e-mail file {filename}")
+            client.sendmail("a@b.cde", ["crashreport@newpipe.net"], data)
+
+        except KeyboardInterrupt:
+            logger.error("SIGINT received, exiting")
+            return 1
+
+        except:
+            logger.exception("Error while trying to import RFC822 e-mail")
 
 
 if __name__ == "__main__":
