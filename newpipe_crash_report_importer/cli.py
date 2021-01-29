@@ -57,13 +57,6 @@ def serve(host, port):
             logger.info("Error while parsing the message: %s" % repr(e))
             return
 
-        if (
-            entry.date.timestamp()
-            < (datetime.now() - timedelta(days=29, hours=23)).timestamp()
-        ):
-            logger.warning("Exception older than 29 days and 23 hours, discarding...")
-            return
-
         if entry.date.timestamp() > datetime.now().timestamp():
             logger.info("Exception occured in the future... How could that happen?")
             return
