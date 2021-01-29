@@ -1,6 +1,7 @@
 import json
 import os
 
+from . import AlreadyStoredError
 from ..database_entry import DatabaseEntry
 from .base import Storage
 
@@ -22,8 +23,8 @@ class DirectoryStorage(Storage):
         )
         os.makedirs(subdir, exist_ok=True)
         path = os.path.join(subdir, message_id)
-        if not os.path.isfile(path):
-            with open(path, "w") as f:
-                json.dump(entry.to_dict(), f, indent=2)
-        else:
-            print("Entry already stored in directory -> skipped")
+        if os.path.isfile(path):
+            raise AlreadyStoredError()
+
+        with open(path, "w") as f:
+            json.dump(entry.to_dict(), f, indent=2)

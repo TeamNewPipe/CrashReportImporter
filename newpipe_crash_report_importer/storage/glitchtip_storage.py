@@ -6,7 +6,7 @@ from typing import List, Union, Optional
 import aiohttp
 from sentry_sdk.utils import Dsn
 
-from . import Storage
+from . import Storage, AlreadyStoredError
 from ..database_entry import DatabaseEntry
 from ..exceptions import StorageError, ParserError
 
@@ -375,5 +375,12 @@ class GlitchtipStorage(Storage):
             async with session.post(
                 url, data=json.dumps(data), headers=headers
             ) as response:
+                # pretty crude way to recognize this issue, but it works well enough
+                if response.status == 403:
+                    if "An event with the same ID already exists" in (
+                        await response.text()
+                    ):
+                        raise AlreadyStoredError()
+
                 if response.status != 200:
                     raise GlitchtipError(response.status, await response.text())

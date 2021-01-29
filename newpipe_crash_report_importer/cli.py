@@ -11,6 +11,7 @@ from . import (
     DirectoryStorage,
     GlitchtipStorage,
     GlitchtipError,
+    AlreadyStoredError,
     LmtpController,
     CrashReportHandler,
     Message,
@@ -54,15 +55,18 @@ def serve(host, port):
 
         try:
             entry = DatabaseEntry(message)
-        except Exception as e:
-            logger.info("Error while parsing the message: %s" % repr(e))
+        except:
+            logger.exception("Error while parsing the message")
             return
 
         if entry.date.timestamp() > datetime.now().timestamp():
-            logger.info("Exception occured in the future... How could that happen?")
+            logger.error("Exception occured in the future... How could that happen?")
             return
 
-        await directory_storage.save(entry)
+        try:
+            await directory_storage.save(entry)
+        except AlreadyStoredError:
+            logger.warning("Already stored in directory storage, skipping")
 
         package = entry.newpipe_exception_info["package"]
 
@@ -73,6 +77,9 @@ def serve(host, port):
                 await legacy_storage.save(entry)
             else:
                 raise RuntimeError("Unknown package: " + package)
+
+        except AlreadyStoredError:
+            logger.warning("Already stored in GlitchTip storage, skipping")
 
         except GlitchtipError as e:
             logger.error("Failed to store error in GlitchTip: %s", e)

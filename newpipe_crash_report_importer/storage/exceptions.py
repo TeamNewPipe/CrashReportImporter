@@ -1,0 +1,2 @@
+class AlreadyStoredError(Exception):
+    pass
