@@ -20,16 +20,17 @@ from . import (
 )
 
 
-configure_logging()
 logger = make_logger("cli")
 
 
 @click.group()
-def cli():
+@click.option("--force-colors", type=bool, default=False)
+def cli(force_colors):
     """
     Placeholder. Allows integration the subcommands.
     """
-    pass
+
+    configure_logging(force_colors=force_colors)
 
 
 @cli.command()

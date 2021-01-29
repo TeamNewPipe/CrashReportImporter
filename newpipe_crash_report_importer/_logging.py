@@ -12,9 +12,15 @@ def make_logger(child_name: str = None):
     return main_logger
 
 
-def configure_logging():
+def configure_logging(force_colors: bool = False):
     # better log format: less verbose, but including milliseconds
     fmt = "%(asctime)s,%(msecs)03d %(name)s [%(levelname)s] %(message)s"
-    coloredlogs.install(level=logging.INFO, fmt=fmt)
+
+    extra_kwargs = dict()
+
+    if force_colors:
+        extra_kwargs["isatty"] = True
+
+    coloredlogs.install(level=logging.INFO, fmt=fmt, **extra_kwargs)
 
     logging.getLogger("mail").setLevel(logging.WARNING)
