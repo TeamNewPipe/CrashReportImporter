@@ -2,7 +2,7 @@ import json
 import os
 
 from ..database_entry import DatabaseEntry
-from ..storage.base import Storage
+from .base import Storage
 
 
 class DirectoryStorage(Storage):
