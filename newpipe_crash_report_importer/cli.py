@@ -12,7 +12,13 @@ from . import (
     LmtpController,
     CrashReportHandler,
     Message,
+    make_logger,
+    configure_logging,
 )
+
+
+configure_logging()
+logger = make_logger("cli")
 
 
 @click.group()
@@ -42,23 +48,23 @@ def serve(host, port):
     # define handler code as closure
     # TODO: this is not very elegant, should be refactored
     async def handle_received_mail(message: Message):
-        print(f"Handling mail")
+        logger.info(f"Handling mail")
 
         try:
             entry = DatabaseEntry(message)
         except Exception as e:
-            print("Error while parsing the message: %s" % repr(e))
+            logger.info("Error while parsing the message: %s" % repr(e))
             return
 
         if (
             entry.date.timestamp()
             < (datetime.now() - timedelta(days=29, hours=23)).timestamp()
         ):
-            print("Exception older than 29 days and 23 hours, discarding...")
+            logger.warning("Exception older than 29 days and 23 hours, discarding...")
             return
 
         if entry.date.timestamp() > datetime.now().timestamp():
-            print("Exception occured in the future... How could that happen?")
+            logger.info("Exception occured in the future... How could that happen?")
             return
 
         await directory_storage.save(entry)
@@ -80,7 +86,7 @@ def serve(host, port):
         port=port,
     )
     controller.start()
-    print(controller.hostname, controller.port)
+    logger.info(f"server listening on {controller.hostname}:{controller.port}")
 
     # run server forever
     asyncio.get_event_loop().run_forever()
