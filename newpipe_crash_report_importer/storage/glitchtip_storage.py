@@ -204,18 +204,24 @@ class GlitchtipError(Exception):
         description = self.text
         message = "Request failed for unknown reason"
 
+        def extract_detail_from_text():
+            json_data = json.loads(self.text)
+            return json_data["detail"]
+
         # a code of 400 usually means our request couldn't be parsed, and GlitchTip should send some JSON that contains
         # details about it
         if self.status == 400:
             message = "Request could not be processed"
-
-            json_data = json.loads(self.text)
-            description = json_data["detail"]
+            description = extract_detail_from_text()
 
         # according to the GlitchTip source code (and some Sentry docs), 401 will be returned when the token
         # authentication didn't work
         if self.status == 401:
             message = "Authentication failed"
+
+        if self.status == 403:
+            message = "Call not allowed"
+            description = extract_detail_from_text()
 
         return f"{message} (status {self.status}): {description}"
 
