@@ -1,4 +1,5 @@
 import hashlib
+import json
 import re
 from typing import List, Union, Optional
 
@@ -193,6 +194,32 @@ class SentryPayload:
         return rv
 
 
+class GlitchtipSaveError(Exception):
+    def __init__(self, status: int, text: str):
+        self.status = status
+        self.text = text
+
+    def __str__(self):
+        # default values, which we'll try to specify depending on the status code below
+        description = self.text
+        message = "Request failed for unknown reason"
+
+        # a code of 400 usually means our request couldn't be parsed, and GlitchTip should send some JSON that contains
+        # details about it
+        if self.status == 400:
+            message = "Request could not be processed"
+
+            json_data = json.loads(self.text)
+            description = json_data["detail"]
+
+        # according to the GlitchTip source code (and some Sentry docs), 401 will be returned when the token
+        # authentication didn't work
+        if self.status == 401:
+            message = "Authentication failed"
+
+        return f"{message} (status {self.status}): {description}"
+
+
 class GlitchtipStorage(Storage):
     """
     Used to store incoming mails on a GlitchTip server.
@@ -340,4 +367,5 @@ class GlitchtipStorage(Storage):
 
         async with aiohttp.ClientSession() as session:
             async with session.post(url, data=data, headers=headers) as response:
-                response.raise_for_status()
+                if response.status != 200:
+                    raise GlitchtipSaveError(response.status, await response.text())
