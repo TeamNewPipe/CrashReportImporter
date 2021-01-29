@@ -366,6 +366,8 @@ class GlitchtipStorage(Storage):
         }
 
         async with aiohttp.ClientSession() as session:
-            async with session.post(url, data=data, headers=headers) as response:
+            async with session.post(
+                url, data=json.dumps(data), headers=headers
+            ) as response:
                 if response.status != 200:
                     raise GlitchtipError(response.status, await response.text())
