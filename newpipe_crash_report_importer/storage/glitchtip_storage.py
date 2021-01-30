@@ -148,6 +148,8 @@ class SentryPayload:
             "os": None,
             "service": None,
             "content_language": None,
+            "content_country": None,
+            "app_language": None,
         }
         self.release: Optional[str] = None
 
@@ -329,7 +331,7 @@ class GlitchtipStorage(Storage):
         except KeyError:
             pass
 
-        for key in ["user_comment", "request", "user_action"]:
+        for key in ["user_comment", "request", "user_action", "content_country", "app_language"]:
             try:
                 payload.extra[key] = newpipe_exc_info[key]
             except KeyError:
