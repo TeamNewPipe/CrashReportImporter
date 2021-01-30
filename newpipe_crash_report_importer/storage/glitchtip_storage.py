@@ -331,7 +331,13 @@ class GlitchtipStorage(Storage):
         except KeyError:
             pass
 
-        for key in ["user_comment", "request", "user_action", "content_country", "app_language"]:
+        for key in [
+            "user_comment",
+            "request",
+            "user_action",
+            "content_country",
+            "app_language",
+        ]:
             try:
                 payload.extra[key] = newpipe_exc_info[key]
             except KeyError:
