@@ -23,4 +23,7 @@ def configure_logging(force_colors: bool = False):
 
     coloredlogs.install(level=logging.INFO, fmt=fmt, **extra_kwargs)
 
+    # hide aiosmtpd's log spam
+    # unfortunately, it can't be configured any more fine grainedly at this point
+    # see https://github.com/aio-libs/aiosmtpd/issues/239 for more information
     logging.getLogger("mail").setLevel(logging.WARNING)
