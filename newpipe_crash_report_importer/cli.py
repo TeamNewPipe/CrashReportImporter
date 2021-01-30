@@ -109,8 +109,11 @@ def import_rfc822(filenames, host, port):
     client = LMTP(host=host, port=port)
 
     for filename in filenames:
-        with open(filename) as f:
-            data = f.read()
+        try:
+            with open(filename) as f:
+                data = f.read()
+        except UnicodeDecodeError:
+            logger.exception("Failed to decode mail contents, skipping")
 
         try:
             logger.info(f"Importing RFC822 e-mail file {filename}")
