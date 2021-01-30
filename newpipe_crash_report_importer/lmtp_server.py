@@ -9,6 +9,37 @@ from aiosmtpd.smtp import Envelope
 from . import make_logger
 
 
+class CustomLMTP(LMTP):
+    """
+    A relatively simple wrapper around the LMTP/SMTP classes that implements some less obtrusive logging around
+    connections.
+
+    Required until https://github.com/aio-libs/aiosmtpd/issues/239 has been resolved.
+    """
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        self.custom_logger = make_logger("lmtp")
+
+    def _get_peer_name(self):
+        return f"{self.session.peer[0]}:{self.session.peer[1]}"
+
+    def connection_made(self, *args, **kwargs):
+        # we have to run the superclass method in advance, as it'll set up self.session, which we'll need in
+        # _get_peer_name
+        rv = super().connection_made(*args, **kwargs)
+
+        self.custom_logger.info("Client connected: %s", self._get_peer_name())
+
+        return rv
+
+    def connection_lost(self, *args, **kwargs):
+        self.custom_logger.info("Client connection lost: %s", self._get_peer_name())
+
+        return super().connection_lost(*args, **kwargs)
+
+
 class LmtpController(Controller):
     """
     A custom controller implementation, return LMTP instances instead of SMTP ones.
@@ -16,7 +47,7 @@ class LmtpController(Controller):
     """
 
     def factory(self):
-        return LMTP(self.handler, ident="NewPipe crash report importer")
+        return CustomLMTP(self.handler, ident="NewPipe crash report importer")
 
 
 class CrashReportHandler:
@@ -28,27 +59,6 @@ class CrashReportHandler:
         self.callback = callback
 
         self.logger = make_logger("lmtp_handler")
-
-    async def handle_LHLO(self, *args):
-        # it seems like the LMTP server will always call the HELO handler when it sees an LHLO, but for good measures,
-        # we'll rather implement this handler, too, to not miss it when they change it in the future
-        self.logger.warning("handle_LHLO called")
-        return self.handle_HELO(*args)
-
-    async def handle_HELO(self, server, session, envelope, hostname):
-        # the only reason this callback exists is so there is some *compact* logging of new connections
-        # it's not really all that robust (as the connection is made before the HELO call is made already), but it's
-        # the only less invasive choice for implementing this kind of logging outside aiosmtpd.SMTP.
-        # see https://github.com/aio-libs/aiosmtpd/issues/239 for more information
-        # it's a really poor solution, though, as disconnects are also not tracked
-        peer = f"{session.peer[0]}:{session.peer[1]}"
-        self.logger.info(f"Client connected: {peer} ({hostname})")
-
-        # these lines have been copied over from aiosmtpd/smtp.py, and are required to make things work
-        # it's a bit unfortunate that there's no Handler class one can derive from that implements these default
-        # reactions, so one could call them with a super().handle_HELO(...) call
-        session.host_name = hostname
-        return "250 {}".format(server.hostname)
 
     async def handle_RCPT(
         self, server, session, envelope: Envelope, address: str, rcpt_options
