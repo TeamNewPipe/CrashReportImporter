@@ -23,6 +23,10 @@ from . import (
 logger = make_logger("cli")
 
 
+class UnknownPackageError(RuntimeError):
+    pass
+
+
 @click.group()
 @click.option("--force-colors", type=bool, default=False)
 def cli(force_colors):
@@ -77,7 +81,7 @@ def serve(host, port):
             elif package == "org.schabi.newpipelegacy":
                 await legacy_storage.save(entry)
             else:
-                raise RuntimeError("Unknown package: " + package)
+                raise UnknownPackageError("Unknown package: " + package)
 
         except AlreadyStoredError:
             logger.warning("Already stored in GlitchTip storage, skipping")
