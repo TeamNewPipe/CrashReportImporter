@@ -4,7 +4,7 @@ FROM python:3.9-alpine
 RUN adduser -S web
 
 # install build dependencies
-RUN apk add --no-cache gcc g++ make musl-dev libffi-dev openssl-dev && \
+RUN apk add --no-cache gcc g++ make musl-dev libffi-dev openssl-dev rust cargo && \
     python3 -m pip install -U poetry
 
 # set up mount for directory storage
