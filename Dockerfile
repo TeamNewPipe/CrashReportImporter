@@ -1,7 +1,8 @@
 FROM python:3.9-slim
 
 # we want to run the server with an unprivileged user
-RUN adduser --system web
+RUN addgroup --gid 101 web && \
+    adduser --system --group --uid 101 web
 
 # set up mount for directory storage
 RUN install -o web -d /app/mails
