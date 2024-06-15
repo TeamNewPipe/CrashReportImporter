@@ -4,6 +4,9 @@ version = "0.0.1"
 description = "NewPipe crash report importer"
 authors = ["TheAssassin <theassassin@assassinate-you.net>"]
 license = "MIT"
+packages = [
+    { include = "newpipe_crash_report_importer" },
+]
 
 [tool.poetry.dependencies]
 python = "^3.6"
