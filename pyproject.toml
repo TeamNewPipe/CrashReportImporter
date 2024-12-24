@@ -10,7 +10,7 @@ packages = [
 
 [tool.poetry.dependencies]
 python = "^3.6"
-aiosmtpd = "^1.2.2"
+aiosmtpd = "^1.4.2"
 bleach = "^3.2.3"
 requests = "^2.25.1"
 sentry-sdk = "^2.8.0"

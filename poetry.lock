@@ -78,16 +78,19 @@ speedups = ["aiodns", "brotlipy", "cchardet"]
 
 [[package]]
 name = "aiosmtpd"
-version = "1.2.2"
+version = "1.4.2"
 description = "aiosmtpd - asyncio based SMTP server"
 optional = false
-python-versions = "*"
+python-versions = "~=3.6"
 files = [
-    {file = "aiosmtpd-1.2.2.tar.gz", hash = "sha256:47fb2a64495e51301af390b6d2d887a16ad01d1df40b0de7ccf456046c52357d"},
+    {file = "aiosmtpd-1.4.2-py3-none-any.whl", hash = "sha256:314f70b74cb8474882cef396b186fbfad8660c7b52be5c1937f3c31df14232a4"},
+    {file = "aiosmtpd-1.4.2.tar.gz", hash = "sha256:aa891d010d2097274189078c6ce2a59a167f3fb2e974e028b572a61e92e1549c"},
 ]
 
 [package.dependencies]
 atpublic = "*"
+attrs = "*"
+typing-extensions = {version = "*", markers = "python_version < \"3.8\""}
 
 [[package]]
 name = "appdirs"
@@ -870,4 +873,4 @@ typing-extensions = {version = ">=3.7.4", markers = "python_version < \"3.8\""}
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.6"
-content-hash = "375854b3cb3c63e522ee206c754c2a43eb4162c8556e94e6e198509eb2c41f4e"
+content-hash = "28bf5ac562213fe6e8f2a7fb73813398f5b949d86dc5fabc0b4c3a2c5a817f8f"
