@@ -1,5 +1,7 @@
 FROM python:3.9-slim
 
+LABEL org.opencontainers.image.source=https://github.com/TeamNewPipe/CrashReportImporter
+
 # we want to run the server with an unprivileged user
 RUN addgroup --gid 101 web && \
     adduser --system --group --uid 101 web
