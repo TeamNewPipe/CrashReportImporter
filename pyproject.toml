@@ -13,7 +13,7 @@ python = "^3.6"
 aiosmtpd = "^1.4.2"
 bleach = "^4.1.0"
 requests = "^2.27.1"
-sentry-sdk = "^2.8.0"
+sentry-sdk = "^2.19.2"
 aiohttp = {extras = ["speedups"], version = "^3.7.3"}
 aiodns = "^3.2.0"
 click = "^7.1.2"
