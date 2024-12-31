@@ -9,7 +9,7 @@ packages = [
 ]
 
 [tool.poetry.dependencies]
-python = "^3.6"
+python = "^3.12"
 aiosmtpd = "^1.4.2"
 bleach = "^4.1.0"
 requests = "^2.27.1"
