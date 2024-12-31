@@ -4,7 +4,7 @@ import re
 from typing import List, Union, Optional
 
 import aiohttp
-from sentry_sdk.utils import Dsn
+from sentry_sdk.utils import Dsn, Auth
 
 from . import Storage, AlreadyStoredError
 from ..database_entry import DatabaseEntry
@@ -238,7 +238,7 @@ class GlitchtipStorage(Storage):
     """
 
     def __init__(self, dsn: str, package: str):
-        self.sentry_auth = Dsn(dsn).to_auth()
+        self.sentry_auth: Auth = Dsn(dsn).to_auth()
         self.package = package
 
     def make_sentry_payload(self, entry: DatabaseEntry):
@@ -368,7 +368,7 @@ class GlitchtipStorage(Storage):
 
         # we use Sentry SDK's auth helper object to calculate both the required auth header as well as the URL from the
         # DSN string we already created a Dsn object for
-        url = self.sentry_auth.store_api_url
+        url = self.sentry_auth.get_api_url()
 
         # it would be great if the Auth object just had a method to create/update a headers dict
         headers = {
