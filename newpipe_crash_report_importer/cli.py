@@ -5,6 +5,7 @@ from smtplib import LMTP
 
 import click
 import sentry_sdk
+from sentry_sdk.integrations.asyncio import AsyncioIntegration
 
 from . import (
     DatabaseEntry,
@@ -42,7 +43,15 @@ def cli(force_colors):
 @click.option("--port", type=int, default=8025)
 def serve(host, port):
     # report errors in the importer to GlitchTip, too
-    sentry_sdk.init(dsn=os.environ["OWN_DSN"])
+    own_dsn = os.environ["OWN_DSN"]
+    print(f"Reporting own errors to Sentry DSN {own_dsn}")
+    sentry_sdk.init(
+        dsn=own_dsn,
+        debug=os.environ.get("DEBUG_SENTRY_SDK", False),
+        integrations=[
+            AsyncioIntegration()
+        ],
+    )
 
     # initialize storages
     directory_storage = DirectoryStorage("mails")
