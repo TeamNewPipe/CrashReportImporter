@@ -64,6 +64,8 @@ def serve(host, port):
             logger.exception("Error while parsing the message")
             return
 
+        logger.info(f"Entry date: {entry.date}")
+
         if entry.date.timestamp() > datetime.now().timestamp():
             logger.error("Exception occured in the future... How could that happen?")
             return
