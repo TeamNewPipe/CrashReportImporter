@@ -241,6 +241,12 @@ class GlitchtipStorage(Storage):
         self.sentry_auth: Auth = Dsn(dsn).to_auth()
         self.package = package
 
+    @property
+    def sentry_store_url(self):
+        # we used to use Sentry SDK's auth helper object to calculate both the URL from the DSN string
+        # since Sentry's SDK now uses the Envelope endpoint by default for ingestion, we need to build the URL ourselves
+        return f"{self.sentry_auth.scheme}://{self.sentry_auth.host}{self.sentry_auth.path}api/{self.sentry_auth.project_id}/store/"
+
     def make_sentry_payload(self, entry: DatabaseEntry):
         newpipe_exc_info = entry.newpipe_exception_info
 
@@ -366,9 +372,7 @@ class GlitchtipStorage(Storage):
         exception = self.make_sentry_payload(entry)
         data = exception.to_dict()
 
-        # we use Sentry SDK's auth helper object to calculate both the required auth header as well as the URL from the
-        # DSN string we already created a Dsn object for
-        url = self.sentry_auth.get_api_url()
+        url = self.sentry_store_url
 
         # it would be great if the Auth object just had a method to create/update a headers dict
         headers = {
