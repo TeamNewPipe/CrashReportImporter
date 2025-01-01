@@ -1,4 +1,5 @@
 import asyncio
+import functools
 import os
 from datetime import datetime
 from smtplib import LMTP
@@ -7,13 +8,13 @@ import click
 import sentry_sdk
 from sentry_sdk.integrations.asyncio import AsyncioIntegration
 
+from newpipe_crash_report_importer.lmtp_server import CustomLMTP
 from . import (
     DatabaseEntry,
     DirectoryStorage,
     GlitchtipStorage,
     GlitchtipError,
     AlreadyStoredError,
-    LmtpController,
     CrashReportHandler,
     Message,
     make_logger,
@@ -100,18 +101,24 @@ def serve(host, port):
         except GlitchtipError as e:
             logger.error("Failed to store error in GlitchTip: %s", e)
 
-    loop = asyncio.get_event_loop()
+    handler = CrashReportHandler(handle_received_mail)
 
-    # set up LMTP server
-    controller = LmtpController(
-        CrashReportHandler(handle_received_mail),
-        enable_SMTPUTF8=True,
-        hostname=host,
-        port=port,
-        loop=loop,
+    loop = asyncio.new_event_loop()
+
+    loop.run_until_complete(
+        loop.create_server(
+            functools.partial(
+                CustomLMTP,
+                handler,
+                ident="NewPipe crash report importer",
+                enable_SMTPUTF8=True,
+            ),
+            host=host,
+            port=port,
+        )
     )
 
-    logger.info(f"server listening on {controller.hostname}:{controller.port}")
+    logger.info(f"server listening on {host}:{port}")
 
     loop.run_forever()
 

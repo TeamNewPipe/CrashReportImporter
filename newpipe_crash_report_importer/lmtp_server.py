@@ -2,7 +2,6 @@ import traceback
 from email.parser import Parser
 
 import sentry_sdk
-from aiosmtpd.controller import Controller
 from aiosmtpd.lmtp import LMTP
 from aiosmtpd.smtp import Envelope
 
@@ -38,16 +37,6 @@ class CustomLMTP(LMTP):
         self.custom_logger.info("Client connection lost: %s", self._get_peer_name())
 
         return super().connection_lost(*args, **kwargs)
-
-
-class LmtpController(Controller):
-    """
-    A custom controller implementation, return LMTP instances instead of SMTP ones.
-    Inspired by GNU Mailman 3"s LMTPController.
-    """
-
-    def factory(self):
-        return CustomLMTP(self.handler, ident="NewPipe crash report importer")
 
 
 class CrashReportHandler:
