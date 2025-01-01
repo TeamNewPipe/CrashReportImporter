@@ -57,7 +57,7 @@ class Message:
     def sanitize_message(original_data):
         normalized = unicodedata.normalize("NFKD", original_data)
         decoded = html.unescape(normalized)
-        sanitized = bleach.clean(decoded, tags=[], attributes={}, styles=[], strip=True)
+        sanitized = bleach.clean(decoded, tags=[], attributes={}, strip=True)
         return unicodedata.normalize("NFKD", sanitized)
 
     @staticmethod
