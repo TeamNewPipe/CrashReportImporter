@@ -100,18 +100,20 @@ def serve(host, port):
         except GlitchtipError as e:
             logger.error("Failed to store error in GlitchTip: %s", e)
 
+    loop = asyncio.get_event_loop()
+
     # set up LMTP server
     controller = LmtpController(
         CrashReportHandler(handle_received_mail),
         enable_SMTPUTF8=True,
         hostname=host,
         port=port,
+        loop=loop,
     )
-    controller.start()
+
     logger.info(f"server listening on {controller.hostname}:{controller.port}")
 
-    # run server forever
-    asyncio.get_event_loop().run_forever()
+    loop.run_forever()
 
 
 # note that import is a protected keyword, so we have to specify the command name explicitly
