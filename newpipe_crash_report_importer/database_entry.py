@@ -1,3 +1,4 @@
+import json
 from datetime import datetime
 from email.utils import parsedate_to_datetime
 from hashlib import sha256
@@ -17,18 +18,20 @@ class DatabaseEntry:
         self.newpipe_exception_info = self.message.embedded_json
 
         try:
-            # try to use the date given by the crash report
-            self.date = datetime.strptime(
-                self.newpipe_exception_info["time"], "%Y-%m-%d %H:%M"
-            )
-            if self.date.year < 2010:
-                raise ValueError()
+            self.date = datetime.fromisoformat(self.newpipe_exception_info["time"])
         except ValueError:
-            # try to use the date from the mail header
-            self.date = parsedate_to_datetime(rfc822_message["date"])
-            if self.date.year < 2010:
-                self.date = self.message.date_from_received_headers()
-                print(self.date)
+            try:
+                # try to use the date given by the crash report
+                self.date = datetime.strptime(
+                    self.newpipe_exception_info["time"], "%Y-%m-%d %H:%M"
+                )
+                if self.date.year < 2010:
+                    raise ValueError()
+            except ValueError:
+                # try to use the date from the mail header
+                self.date = parsedate_to_datetime(rfc822_message["date"])
+                if self.date.year < 2010:
+                    self.date = self.message.date_from_received_headers()
 
     def to_dict(self):
         # we don't store the From header, as it's not needed for potential re-imports of the database, but could be
