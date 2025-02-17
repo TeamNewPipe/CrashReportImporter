@@ -14,7 +14,7 @@ aiosmtpd = "^1.4.2"
 bleach = "^6.2.0"
 requests = "^2.27.1"
 sentry-sdk = "~2.21.0"
-aiohttp = {extras = ["speedups"], version = "^3.8.6"}
+aiohttp = {extras = ["speedups"], version = "^3.11.12"}
 aiodns = "^3.2.0"
 click = "^8.0.4"
 coloredlogs = "^15.0"
