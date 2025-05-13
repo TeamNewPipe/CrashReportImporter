@@ -16,7 +16,7 @@ requests = "^2.27.1"
 sentry-sdk = "~2.24.1"
 aiohttp = {extras = ["speedups"], version = "^3.11.14"}
 aiodns = "^3.4.0"
-click = "^8.0.4"
+click = "^8.2.0"
 coloredlogs = "^15.0"
 
 [tool.poetry.dev-dependencies]
