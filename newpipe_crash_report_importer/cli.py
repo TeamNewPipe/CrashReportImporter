@@ -58,9 +58,15 @@ def serve(host, port):
     directory_storage = DirectoryStorage("mails")
 
     newpipe_dsn = os.environ["NEWPIPE_DSN"]
+    newpipe_nightly_dsn = os.environ["NEWPIPE_NIGHTLY_DSN"]
+    newpipe_refactor_nightly_dsn = os.environ["NEWPIPE_REFACTOR_NIGHTLY_DSN"]
     newpipe_legacy_dsn = os.environ["NEWPIPE_LEGACY_DSN"]
 
     sentry_storage = GlitchtipStorage(newpipe_dsn, "org.schabi.newpipe")
+    nightly_storage = GlitchtipStorage(newpipe_nightly_dsn, "org.schabi.newpipe.nightly")
+    refactor_nightly_storage = GlitchtipStorage(
+        newpipe_refactor_nightly_dsn, "org.schabi.newpipe.refactor.nightly"
+    )
     legacy_storage = GlitchtipStorage(newpipe_legacy_dsn, "org.schabi.newpipelegacy")
 
     # define handler code as closure
@@ -77,7 +83,7 @@ def serve(host, port):
         logger.info(f"Entry date: {entry.date}")
 
         if entry.date.timestamp() > datetime.now().timestamp():
-            logger.error("Exception occured in the future... How could that happen?")
+            logger.error("Exception occurred in the future... How could that happen?")
             return
 
         try:
@@ -90,6 +96,10 @@ def serve(host, port):
         try:
             if package == "org.schabi.newpipe":
                 await sentry_storage.save(entry)
+            elif package == "org.schabi.nightly":
+                await nightly_storage.save(entry)
+            elif package == "org.schabi.newpipe.refactor.nightly":
+                await refactor_nightly_storage.save(entry)
             elif package == "org.schabi.newpipelegacy":
                 await legacy_storage.save(entry)
             else:
