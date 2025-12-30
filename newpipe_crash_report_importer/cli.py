@@ -96,7 +96,7 @@ def serve(host, port):
         try:
             if package == "org.schabi.newpipe":
                 await sentry_storage.save(entry)
-            elif package == "org.schabi.nightly":
+            elif package == "org.schabi.newpipe.nightly":
                 await nightly_storage.save(entry)
             elif package == "org.schabi.newpipe.refactor.nightly":
                 await refactor_nightly_storage.save(entry)
