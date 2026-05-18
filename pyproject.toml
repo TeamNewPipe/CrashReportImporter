@@ -20,7 +20,7 @@ click = "^8.3.2"
 coloredlogs = "^15.0"
 
 [tool.poetry.dev-dependencies]
-black = "^26.3"
+black = "^26.5"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
