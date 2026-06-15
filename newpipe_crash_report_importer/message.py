@@ -5,7 +5,7 @@ import unicodedata
 from email.message import EmailMessage
 from email.utils import parsedate_to_datetime
 
-import bleach
+import nh3
 
 from .exceptions import ParserError
 
@@ -57,7 +57,7 @@ class Message:
     def sanitize_message(original_data):
         normalized = unicodedata.normalize("NFKD", original_data)
         decoded = html.unescape(normalized)
-        sanitized = bleach.clean(decoded, tags=[], attributes={}, strip=True)
+        sanitized = nh3.clean(decoded, tags=[], attributes={}, strip=True)
         return unicodedata.normalize("NFKD", sanitized)
 
     @staticmethod
