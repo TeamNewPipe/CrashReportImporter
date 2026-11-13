@@ -1,4 +1,4 @@
-FROM python:3.14
+FROM python:3.15
 
 LABEL org.opencontainers.image.source=https://github.com/TeamNewPipe/CrashReportImporter
 
